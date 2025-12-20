@@ -1,8 +1,10 @@
-python
-from pydantic import BaseModel, Field, EmailStr
-from datetime import datetime
+from pydantic import BaseModel, Field
+from datetime import datetime, timezone
 from typing import Optional
 from enum import Enum
+
+
+get_current_time = lambda: datetime.now(timezone.utc)
 
 
 class UserRole(str, Enum):
@@ -13,7 +15,7 @@ class UserRole(str, Enum):
 
 class UserBase(BaseModel):
     username: str
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     user_role: UserRole = UserRole.USER
     is_active: bool = True
 
@@ -24,7 +26,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     user_role: Optional[UserRole] = None
     is_active: Optional[bool] = None
 
@@ -51,7 +53,7 @@ class Token(BaseModel):
 class TokenResponse(BaseModel):
     success: bool = True
     message: str = "Success"
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=get_current_time)
     access_token: Token
     refresh_token: Token
     user: User
@@ -69,7 +71,7 @@ class RefreshTokenRequest(BaseModel):
 class SuccessResponse(BaseModel):
     success: bool = True
     message: str = "Success"
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=get_current_time)
 
 
 class ChangePasswordRequest(BaseModel):
@@ -80,7 +82,7 @@ class ChangePasswordRequest(BaseModel):
 class UserCreateRequest(BaseModel):
     username: str
     password: str
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     user_role: UserRole = UserRole.USER
     is_active: bool = True
 
@@ -94,7 +96,7 @@ class GetAllUsersRequest(BaseModel):
 
 class GetAllUsersResponse(BaseModel):
     success: bool = True
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=get_current_time)
     users: list[User]
     total_count: int
 

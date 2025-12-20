@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from app.api.auth.endpoints import router as auth_router
+from api.auth_endpoints import router as auth_router
+
 # Импортируем другие роутеры, когда они будут созданы
 # from app.api.users.endpoints import router as users_router
 # from app.api.rooms.endpoints import router as rooms_router

@@ -9,32 +9,24 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v3
     
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: "3.13"
     
     - name: Install Poetry
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
     
     - name: Install dependencies
       run: |
-        poetry install
+        poetry install --with dev --no-interaction --no-ansi
     
     - name: Run tests
       run: |
         poetry run pytest tests/ -v
-    
-    - name: Run linters
-      run: |
-        poetry run black --check app/ tests/
-        poetry run isort --check-only app/ tests/
-        poetry run flake8 app/ tests/

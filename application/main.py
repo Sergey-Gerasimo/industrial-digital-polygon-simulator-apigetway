@@ -1,28 +1,40 @@
-import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import make_asgi_app
 
-from config import EnvConfig, LoggerConfig, logger
-
-env = EnvConfig()
-LoggerConfig(log_level=env.LOG_LEVEL, log_format=env.LOG_FORMAT).configure()
-
+from app.core.config import settings
+from app.api.router import api_router
 app = FastAPI(
-    title=env.APP_NAME,
-    debug=env.DEBUG,
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    debug=settings.DEBUG,
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
+
+
+app.include_router(api_router, prefix=settings.API_PREFIX)
+
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Industrial Digital Polygon Simulator API Gateway",
+        "version": settings.VERSION,
+        "docs": "/docs",
+        "redoc": "/redoc"
+    }
 
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok"}
-
-
-if __name__ == "__main__":
-    logger.info(f"Starting {env.APP_NAME} on {env.HOST}:{env.PORT}")
-    uvicorn.run(
-        "application.main:app",
-        host=env.HOST,
-        port=env.PORT,
-        reload=env.DEBUG,
-    )
+    return {"status": "healthy"}
